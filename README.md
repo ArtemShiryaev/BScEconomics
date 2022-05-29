@@ -1,5 +1,6 @@
 # BScEconomics
 Script, packages, external functions and dataset for Bachelor Thesis in Economics at Umeå University, Spring 2022
+
 Author: Artem Angelchev Shiryaev
 Date: 2022-05-29
 
