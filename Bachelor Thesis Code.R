@@ -219,8 +219,6 @@ rm(temp.name,
 lagLenght <- VARselect(tempdiff, lag.max = 250,
                        type = "const")
 
-#DiffBitcoin[,8], lag.max = 250,
-#exogen = DiffBitcoin[,1:7],
 
 # Results of the Various selection criterions
 # I only apply SC(n), also known as BIC
@@ -230,6 +228,16 @@ lagLenght$selection
 
 
 
+
+# CHECKING ONLY FOR AR PROCESS
+# lagLenght <- VARselect(tempdiff[,8], lag.max = 250,
+#                        exogen = tempdiff[,1:7],
+#                        type = "const")
+
+
+# lagLenght[3]$selection
+# SC(n)
+# 183  
 
 
 
