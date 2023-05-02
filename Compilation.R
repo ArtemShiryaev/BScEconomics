@@ -9,7 +9,7 @@
 
 
 # Revision Date 2023-05-02
-
+# R version 4.2.1 used
 
 
 
@@ -17,33 +17,26 @@
 ######## Libraries & Packages #########
 #######################################
 
-## If not installed uncomment
-list.of.packages <- c("highfrequency", "data.table", "xts")
+## List of Packages
+list.of.packages <- c("highfrequency", 
+                      "data.table", 
+                      "xts",
+                      "tibble",
+                      "tidyquant",
+                      "vars",
+                      "urca",
+                      "forecast",
+                      "dymo",
+                      "MTS",
+                      "mvtsplot")
+# Install if applicable
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
+# Load packages
 lapply(list.of.packages, require, character.only = TRUE)
 
-## List of Packages
 
-library(highfrequency)
-library(data.table)
-library(xts)
-library(tidyquant)
-library(tibble)
-#library(quantmod)
-#library(ggplot2)
-library(vars)
-#library(VARshrink)
-#library(BigVAR)
-#library(glmnet)
-#library(lars)
-library(urca)
-library(forecast)
-#library(dplyr)
-library(dymo)
-library(MTS)
-library(mvtsplot)
 
 
 getwd()
