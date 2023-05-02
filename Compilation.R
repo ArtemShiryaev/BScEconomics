@@ -8,7 +8,7 @@
 
 
 
-# Revision Date 2023-04-30
+# Revision Date 2023-05-02
 
 
 
@@ -17,6 +17,33 @@
 ######## Libraries & Packages #########
 #######################################
 
+## If not installed uncomment
+list.of.packages <- c("highfrequency", "data.table", "xts")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+lapply(list.of.packages, require, character.only = TRUE)
+
+## List of Packages
+
+library(highfrequency)
+library(data.table)
+library(xts)
+library(tidyquant)
+library(tibble)
+#library(quantmod)
+#library(ggplot2)
+library(vars)
+#library(VARshrink)
+#library(BigVAR)
+#library(glmnet)
+#library(lars)
+library(urca)
+library(forecast)
+#library(dplyr)
+library(dymo)
+library(MTS)
+library(mvtsplot)
 
 
 getwd()
@@ -32,29 +59,14 @@ gc()
 
 
 ## Loading data
-# Original dataset NOT INCLUDED ON GITHUB DUE TO SIZE
+# Original dataset
 
 load("~/GitHub/Big Data/Project Deep Learning/CNN_LSTM_Project/DatasetKaggle.RData")
 
-# # Checking missing values
-# sum(is.na(as.matrix(train)))
-# #  750347
-# 
-# #Complete cases omiiting 
-# train <- na.omit(train) 
-# 
-# sum(is.na(as.matrix(train)))
-# # 0
 
 
-library(highfrequency)
-library(data.table)
-library(xts)
-library(tidyquant)
-library(tibble)
-library(quantmod)
 
-
+## Subsetting dataset into each respective classes
 
 BNB  <- train[train$Asset_ID == 0, ]  # Binance Coin
 BTC  <- train[train$Asset_ID == 1, ]  # Bitcoin
@@ -71,12 +83,13 @@ XMR  <- train[train$Asset_ID == 11, ] # Monero
 XLM  <- train[train$Asset_ID == 12, ] # Stellar
 TRX  <- train[train$Asset_ID == 13, ] # Tron
 
+#Removing original data set to save RAM 
 rm(train)
 
 
 
-# OWN FUNCTIONS
-# Fixing time series orders
+# OWN FUNCTIONS to transform original timestamps into usable time series format
+
 Fix_time <- function(r){
   ti= seq(from = ymd_hm("1970-01-01 00:00"),
           to = ymd_hm("2021-09-21 00:00"), by =  "1 min", tz = "UTC")
@@ -92,7 +105,7 @@ Fix_time <- function(r){
   return(r)
 }
 
-##### Remove NA
+# Remove NA function from time series dataset
 
 Remove_NA <- function(r){
   if (sum(is.na(as.matrix(r))) == 0){
@@ -104,6 +117,7 @@ Remove_NA <- function(r){
   
 }
 
+# Both functions in one
 Both_fun <- function(r){
   r <- Fix_time(r)
   r <- Remove_NA(r)
@@ -111,7 +125,7 @@ Both_fun <- function(r){
 }
 
 
-
+# Applying both functions to each asset
 BNB <- Both_fun(BNB); BTC <- Both_fun(BTC); BCH <- Both_fun(BCH); ADA <- Both_fun(ADA); DOGE <- Both_fun(DOGE);
 EOS <- Both_fun(EOS); ETH <- Both_fun(ETH); ETC <- Both_fun(ETC); IOTA <- Both_fun(IOTA); LTC <- Both_fun(LTC);
 MKR <- Both_fun(MKR); XMR <- Both_fun(XMR); XLM <- Both_fun(XLM); TRX <- Both_fun(TRX)
@@ -119,23 +133,23 @@ MKR <- Both_fun(MKR); XMR <- Both_fun(XMR); XLM <- Both_fun(XLM); TRX <- Both_fu
 
 
 
-##### AGGREGATE THE TIME SERIES TO REDUCE SIZE OF DATASET
+## AGGREGATE THE TIME SERIES TO REDUCE SIZE OF DATASET to hourly data rather than minute data
 
 tt <- 60 # 60 mins instead of 1 minute hfd
-BNB  <- aggregateTS(BNB,  alignBy = "minutes", alignPeriod = tt) # Binance Coin
-BTC  <- aggregateTS(BTC,  alignBy = "minutes", alignPeriod = tt) # Bitcoin
-BCH  <- aggregateTS(BCH,  alignBy = "minutes", alignPeriod = tt) # Bitcoin Cash
-ADA  <- aggregateTS(ADA,  alignBy = "minutes", alignPeriod = tt) # Cardano 
-DOGE <- aggregateTS(DOGE, alignBy = "minutes", alignPeriod = tt) # Dogecoin
-EOS  <- aggregateTS(EOS,  alignBy = "minutes", alignPeriod = tt) # EOS.IO
-ETH  <- aggregateTS(ETH,  alignBy = "minutes", alignPeriod = tt) # Ethererum
-ETC  <- aggregateTS(ETC,  alignBy = "minutes", alignPeriod = tt) # Ethereum Classic
-IOTA <- aggregateTS(IOTA, alignBy = "minutes", alignPeriod = tt) # IOTA
-LTC  <- aggregateTS(LTC,  alignBy = "minutes", alignPeriod = tt) # Litecoin
-MKR  <- aggregateTS(MKR,  alignBy = "minutes", alignPeriod = tt) # Maker
-XMR  <- aggregateTS(XMR,  alignBy = "minutes", alignPeriod = tt) # Monero
-XLM  <- aggregateTS(XLM,  alignBy = "minutes", alignPeriod = tt) # Stellar
-TRX  <- aggregateTS(TRX,  alignBy = "minutes", alignPeriod = tt) # Tron
+BNB  <- aggregateTS(BNB, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Binance Coin
+BTC  <- aggregateTS(BTC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Bitcoin
+BCH  <- aggregateTS(BCH, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Bitcoin Cash
+ADA  <- aggregateTS(ADA, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Cardano 
+DOGE <- aggregateTS(DOGE, FUN =  "mean", alignBy = "minutes", alignPeriod = tt) # Dogecoin
+EOS  <- aggregateTS(EOS, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # EOS.IO
+ETH  <- aggregateTS(ETH, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Ethererum
+ETC  <- aggregateTS(ETC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Ethereum Classic
+IOTA <- aggregateTS(IOTA, FUN =  "mean", alignBy = "minutes", alignPeriod = tt) # IOTA
+LTC  <- aggregateTS(LTC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Litecoin
+MKR  <- aggregateTS(MKR, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Maker
+XMR  <- aggregateTS(XMR, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Monero
+XLM  <- aggregateTS(XLM, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Stellar
+TRX  <- aggregateTS(TRX, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Tron
 
 
 
@@ -146,11 +160,13 @@ gc()
 
 
 # FIRST CHECK BTC
-data <- BTC
+
 
 #######################################
 #### CHECKING STATIONARITY WITH ADF ###
 #######################################
+
+# Augmented Dicker fuller function to check for stationarity
 adf_testing <- function(data,adf.type,selection){
   library(urca)
   source("~/GitHub/BScEconomics/LASSO Scripts/R/interp_urdf.R")
@@ -177,31 +193,51 @@ adf_testing <- function(data,adf.type,selection){
   return(res)
 }
   
+adf.BTC <- adf_testing(BTC,"none","BIC")#;adf.BTC
+
+#       Count         Open         High          Low        Close       Volume         VWAP       Target 
+# -31.0835829    0.1732056    0.1845908    0.1554837    0.1711138  -44.1645633    0.1717384 -125.4182999 
+
+# For BTC the univariate time series
+# Open, High, Low, Close, VWAP are non-stationary, differences are taken and adf is checked again
+
+# Which makes sense given 
+#plot(BTC[1:1000, ])
+
+
+diff.BTC  <- diff(BTC[, c(3,4,5,6,8)],  differences=1);diff.BTC <- diff.BTC[-1, ]; BTC <- BTC[-1, ]
+BTC$Open <- diff.BTC$Open;BTC$High <- diff.BTC$High;BTC$Low <- diff.BTC$Low;BTC$Close <- diff.BTC$Close;BTC$VWAP <- diff.BTC$VWAP
+#diff.BTC$Asset_ID <- BTC$Asset_ID[-1,]; diff.BTC  <- Remove_NA(diff.BTC)
+
 adf.BTC <- adf_testing(BTC,"none","AIC");adf.BTC
-# Count         Open         High          Low        Close       Volume         VWAP       Target 
-#-50.1421128    0.2303747    0.2423791    0.1848168    0.2211279  -73.2204551    0.2227553 -127.5955009 
+
+#     Count       Open       High        Low      Close     Volume       VWAP     Target 
+#-31.08319 -119.14989 -118.71679 -120.96774 -119.19247  -44.16425 -119.26432 -125.37487 
 
 
-diff.BTC  <- diff(BTC,  differences=1);diff.BTC <- diff.BTC[-1, ]  #tempdiff[,1]  <- BTC$Asset_ID ;tempdiff
-diff.BTC$Asset_ID <- BTC$Asset_ID[-1,]; diff.BTC  <- Remove_NA(diff.BTC)
-
-adf.BTC <- adf_testing(diff.BTC,"none","AIC");adf.BTC
-
-# Count      Open      High       Low     Close    Volume      VWAP    Target 
-#-205.2493 -131.3066 -130.3958 -135.2840 -131.2498 -211.8842 -131.4471 -219.7688 
+library(aTSA)
 
 
+## Plotting PACF and ACF and CCF plots
+
+acf(BTC[,-1], lag.max = 100)
+pacf(BTC[,-1], lag.max = 100)
+
+library(corrplot)
+
+M <- cor(BTC[,-1])
+corrplot.mixed(M, order = 'AOE')
 
 # Selecting Optimal Lag
 # WARNING: Takes 2+ hrs on laptop for this dataset size
-lagLenght <- VARselect(diff.BTC, lag.max = 100, type = "const")
+lagLenght <- VARselect(BTC, lag.max = 30, type = "const")
 
 
 # Results of the Various selection criterions
 # I only apply SC(n), also known as BIC
-lagLenght$selection
-# AIC(n)  HQ(n)  SC(n) FPE(n) 
-# 61     31     16     61
+#lagLenght$selection
+## AIC(n)  HQ(n)  SC(n) FPE(n) 
+## 61     31     16     61
 
 lagLenght$selection
 #AIC(n)  HQ(n)  SC(n) FPE(n) 
@@ -245,15 +281,43 @@ caus.test <- GrangerTest(X = temp.data[,-1],p = 1)
 ## VARMA Model
 
 # Decide which VMA order
-VMA.model1 <- VMAorder(x = t(temp.data[ ,-1]) , lag = 25)
+VMA.model1 <- VMAorder(x = temp.data[ ,-1] , lag = 500)
+VMA.model2 <- VMAorder(x = BTC[ ,-1] , lag = 300)
+
+gc()
+# 25 lag takes a long time
+VARMA.mod1 <- VARMA(as.matrix(temp.data[1:1000, -1]) , p = 3, q = 2)
 
 
-library(ggplot2)
-library(vars)
-library(VARshrink)
-library(BigVAR)
-library(glmnet)
-library(lars)
-library(urca)
-library(forecast)
 
+pred2 <- VARMApred(VARMA.mod1, h = 10)
+
+MTSplot(pred2$pred)
+
+MTSdiag(model = VARMA.mod1)
+
+
+VARMAX_model1 <- VARMAX
+
+
+
+x <- matrix(rnorm(2000), 100, 2)
+mvtsplot(x)
+
+mvtsplot(pred2$pred, levels = 14)
+
+
+library(dplyr)
+library(dymo)
+model.dymo1 <- dymo( as.data.frame(temp.data[1:24000, -1]), seq_len = 2000, ci = 0.7)
+
+
+
+library(dplyr)
+install.packages('tdplyr',repos=c('https://r-repo.teradata.com','https://cloud.r-project.org'))
+
+
+temp.data3 <- temp.data[,-1]
+library(Arima)
+mod2 <- auto.arima(temp.data3[,8],
+                   xreg = temp.data[,-8])
