@@ -28,7 +28,8 @@ list.of.packages <- c("highfrequency",
                       "forecast",
                       "dymo",
                       "MTS",
-                      "mvtsplot")
+                      "mvtsplot",
+                      "aTSA")
 # Install if applicable
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
@@ -38,7 +39,7 @@ lapply(list.of.packages, require, character.only = TRUE)
 
 
 
-
+# Setting Working directory
 getwd()
 #setwd()
 
@@ -117,7 +118,7 @@ Both_fun <- function(r){
   return(r)
 }
 
-
+gc()
 # Applying both functions to each asset
 BNB <- Both_fun(BNB); BTC <- Both_fun(BTC); BCH <- Both_fun(BCH); ADA <- Both_fun(ADA); DOGE <- Both_fun(DOGE);
 EOS <- Both_fun(EOS); ETH <- Both_fun(ETH); ETC <- Both_fun(ETC); IOTA <- Both_fun(IOTA); LTC <- Both_fun(LTC);
@@ -129,20 +130,20 @@ MKR <- Both_fun(MKR); XMR <- Both_fun(XMR); XLM <- Both_fun(XLM); TRX <- Both_fu
 ## AGGREGATE THE TIME SERIES TO REDUCE SIZE OF DATASET to hourly data rather than minute data
 
 tt <- 60 # 60 mins instead of 1 minute hfd
-BNB  <- aggregateTS(BNB, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Binance Coin
-BTC  <- aggregateTS(BTC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Bitcoin
-BCH  <- aggregateTS(BCH, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Bitcoin Cash
-ADA  <- aggregateTS(ADA, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Cardano 
-DOGE <- aggregateTS(DOGE, FUN =  "mean", alignBy = "minutes", alignPeriod = tt) # Dogecoin
-EOS  <- aggregateTS(EOS, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # EOS.IO
-ETH  <- aggregateTS(ETH, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Ethererum
-ETC  <- aggregateTS(ETC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Ethereum Classic
-IOTA <- aggregateTS(IOTA, FUN =  "mean", alignBy = "minutes", alignPeriod = tt) # IOTA
-LTC  <- aggregateTS(LTC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Litecoin
-MKR  <- aggregateTS(MKR, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Maker
-XMR  <- aggregateTS(XMR, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Monero
-XLM  <- aggregateTS(XLM, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Stellar
-TRX  <- aggregateTS(TRX, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt) # Tron
+BNB  <- aggregateTS(BNB, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Binance Coin
+BTC  <- aggregateTS(BTC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Bitcoin
+BCH  <- aggregateTS(BCH, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Bitcoin Cash
+ADA  <- aggregateTS(ADA, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Cardano 
+DOGE <- aggregateTS(DOGE, FUN =  "mean", alignBy = "minutes", alignPeriod = tt);gc() # Dogecoin
+EOS  <- aggregateTS(EOS, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # EOS.IO
+ETH  <- aggregateTS(ETH, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Ethererum
+ETC  <- aggregateTS(ETC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Ethereum Classic
+IOTA <- aggregateTS(IOTA, FUN =  "mean", alignBy = "minutes", alignPeriod = tt);gc() # IOTA
+LTC  <- aggregateTS(LTC, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Litecoin
+MKR  <- aggregateTS(MKR, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Maker
+XMR  <- aggregateTS(XMR, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Monero
+XLM  <- aggregateTS(XLM, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Stellar
+TRX  <- aggregateTS(TRX, FUN =  "mean",  alignBy = "minutes", alignPeriod = tt);gc() # Tron
 
 
 
@@ -150,6 +151,24 @@ gc()
 
 
 
+load("C:/Users/zerzy/Documents/GitHub/BScEconomics/AggregatedDatasetFinal.RData")
+
+
+
+## ARIMA Testing
+library(forecast)
+#32605
+
+mod1 <- auto.arima(as.ts(BTC$Target[1:20000]),
+                   xreg= as.ts(BTC[1:20000,2:7])
+                   )
+
+forecasted.mod1 <- forecast(mod1, h = 12605, 
+                            xreg =as.ts(BTC[20001:32605,2:7] )
+)
+plot(forecasted.mod1)
+lines(x = as.ts(BTC$Target[1:20000]) as.ts(BTC$Target[20001:32605]), col = "red", lty = c ("blank", 1)
+)
 
 
 # FIRST CHECK BTC
@@ -188,6 +207,9 @@ adf_testing <- function(data,adf.type,selection){
   
 adf.BTC <- adf_testing(BTC,"none","BIC")#;adf.BTC
 
+adf.test.BTC <- adf.test(as.matrix(BTC[,9]), nlag = 50)
+adf.test.ETH <- adf.test(as.matrix(ETH[,6]), nlag = 50)
+
 #       Count         Open         High          Low        Close       Volume         VWAP       Target 
 # -31.0835829    0.1732056    0.1845908    0.1554837    0.1711138  -44.1645633    0.1717384 -125.4182999 
 
@@ -208,9 +230,14 @@ adf.BTC <- adf_testing(BTC,"none","AIC");adf.BTC
 #-31.08319 -119.14989 -118.71679 -120.96774 -119.19247  -44.16425 -119.26432 -125.37487 
 
 
+# Testing Co-integration
 library(aTSA)
+temp.ETH <- ETH[, -1]
+cointegation.test <- coint.test(y = as.matrix(temp.ETH[,8]), X = as.matrix(temp.ETH[ ,1:7]) )
 
 
+plot(BNB$Volume)
+plot(BNB$Count)
 ## Plotting PACF and ACF and CCF plots
 
 acf(BTC[,-1], lag.max = 100)
