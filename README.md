@@ -2,8 +2,8 @@
 Script, packages, external functions and dataset for my Bachelor Thesis in Economics at Umeå University, Spring 2022
 
 Author: Artem Angelchev Shiryaev
-Date: 2022-05-29
-
+Orignal Date: 2022-05-29
+Updated: 2024-08-28
 
 
 For external scripts, see respective packages. 
