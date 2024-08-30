@@ -3,7 +3,7 @@ Script, packages, external functions and dataset for my Bachelor Thesis in Econo
 
 Author: Artem Angelchev Shiryaev
 Orignal Date: 2022-05-29
-Updated: 2024-08-28
+Updated: 2024-08-28 - Under reconstruction
 
 
 For external scripts, see respective packages. 
